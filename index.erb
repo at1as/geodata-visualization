@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en_US">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Real Time GeoData</title>
+    <meta name="description" content="WebGL Globe for publishing geo data">
+    <style>
+      body {
+        padding: 0;
+        margin: 0;
+        background: black;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div id='globe'></div>
+    </main>
+      
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r70/three.min.js'></script>
+    <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous"></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r79/three.min.js'></script>
+    <script src='globe.js'></script>
+    <script>
+
+      var div = document.getElementById('globe');
+      var urls = {
+        earth:    'img/world.jpg',
+        bump:     'img/bump.jpg',
+        specular: 'img/specular.jpg',
+      }
+
+      // create a globe
+      var globe = new Globe(div, urls);
+      globe.init();
+
+      // configurables
+      var centerAroundCoords = <%= @recenter %>;
+      var refreshInterval = <%= @poll_interval %>;
+
+      var checkForData = function() {
+        $.getJSON("/geography", function(coords) {
+          if (coords === undefined) { return; }
+
+
+          console.log("Adding Coordinates : " + JSON.stringify(coords));
+
+          var dataPoint = {
+            color: "#FF0000",
+            sizeX: 0.75,
+            sizeY: 0.75,
+            sizeZ: 1,
+            lat:   parseFloat(coords.latitude, 10),
+            lon:   parseFloat(coords.longitude, 10)
+          }
+
+          setTimeout(function() {
+            globe.growBlocks(dataPoint);
+          }, 300);
+
+          if (centerAroundCoords) {
+            globe.center(dataPoint);
+          }
+
+        });
+     }
+
+    setInterval(checkForData, refreshInterval);
+    </script>
+  </body>
+</html>
